@@ -6,6 +6,27 @@ const routes = [
       // { path: '', component: () => import('pages/IndexPage.vue') },
       { path: "", component: () => import("src/pages/BuyPage.vue") },
       { path: "/sell", component: () => import("src/pages/SellPage.vue") },
+      {
+        path: "/ba",
+        name: "ba",
+        component: () => import("src/pages/BaPage.vue"),
+      },
+      {
+        path: "/customerba",
+        component: () => import("src/pages/CustomerBaPage.vue"),
+      },
+      {
+        path: "/register",
+        component: () => import("src/pages/RegisterPage.vue"),
+      },
+      {
+        path: "/login",
+        component: () => import("src/pages/LoginPage.vue"),
+      },
+      {
+        path: "/profile",
+        component: () => import("src/pages/ProfilePage.vue"),
+      },
     ],
   },
 

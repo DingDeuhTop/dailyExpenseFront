@@ -2,6 +2,7 @@
 import { api } from 'src/boot/axios'
 import { onMounted, ref } from 'vue';
 
+
 const columns = ref([
     {
         name: "id",
@@ -31,38 +32,57 @@ const buys = ref([]);
 const buyItem = ref(null)
 const buyPrice = ref(null)
 const show_edit = ref(false)
-// const currentIndex = ref(null);
 const show_delete = ref(false);
 const tempData = ref(null);
 const total = ref(null)
 const pagination = ref({
     sortBy: 'desc',
     descending: true,
-    rowsPerPage: 3,
+    rowsPerPage: 15,
     page: 0,
-    // rowsNumber: 30
+    rowsNumber: 0
 })
 
 
 onMounted(async () => {
-    const res = await api.get('/buy')
-    buys.value = res.data.buy.data;
-    total.value = res.data.total;
+    // api.defaults.headers.common["Authorization"] =
+    //     "Bearer " + localStorage.getItem("token");
+    getBuys({
+        pagination: pagination.value
+    })
+
     // console.log(res);
 })
 
+async function getBuys(props) {
+    pagination.value = props.pagination
+    const res = await api.get('/buy',
+        {
+            headers: {
+                // authorization: 'Bearer ' + localStorage.getItem('token')
+            }, params: props.pagination
+        })
+    buys.value = res.data.buy.data;
+    total.value = res.data.total;
+    pagination.value.rowsNumber = res.data.buy.total;
+}
+
 async function addItem() {
     // console.log('asd')
-    const res = await api.post('buy',
+    const res = await api.post('/buy',
         {
             item: buyItem.value,
             price: buyPrice.value
 
+        },
+        {
+            params: pagination.value
         }
     );
     buyItem.value = '';
     buyPrice.value = '';
-    buys.value = res.data;
+    buys.value = res.data.buy.data;
+    pagination.value.rowsNumber = res.data.buy.total
     // console.log(res)
 }
 function onEdit(data) {
@@ -112,14 +132,14 @@ async function deleteItem() {
                             placeholder="Enter Item" />
                         <q-input class="col-5 q-pr-sm" outlined dense v-model="buyPrice" type="number"
                             placeholder="Enter Price" />
-                        <q-btn class="col-2" label="Submit" type="submit" color="primary" />
+                        <q-btn class="col-2" label="Add" type="submit" color="primary" />
                     </q-card-section>
                 </q-card>
             </div>
         </q-form>
         <div class="q-pa-md">
             <q-table title="Product Buy(in Month)" :rows="buys" :columns="columns" row-key="name"
-                v-model:pagination="pagination">
+                v-model:pagination="pagination" @request="getBuys">
                 <template v-slot:body="props">
                     <tr>
                         <td>
@@ -183,7 +203,8 @@ async function deleteItem() {
     <q-dialog v-model="show_delete" persistent>
         <q-card>
             <div class="q-pa-sm text-center">
-                <h6 class="col-6 q-mt-md text-red">Do you want to delete item <span class="text-bold">{{ tempData.id
+                <h6 class="col-6 q-mt-md text-red">Do you want to delete item <span class="text-bold">{{
+                    tempData.id
                 }}</span>?
                 </h6>
             </div>
