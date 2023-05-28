@@ -1,6 +1,6 @@
 <script setup>
 import { api } from 'src/boot/axios';
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { customerId } from 'src/modules/CustomerHelper';
 const columns = ref([
@@ -58,7 +58,7 @@ async function getBas(props) {
 }
 
 async function showCustomerBa(props) {
-    console.log('asdf', props);
+    // console.log('asdf', props);
     localStorage.setItem('customerId', props.id)
     customerId.value = props.id
     router.push({
@@ -115,7 +115,7 @@ async function deleteCustomer() {
                     <q-card-section class="row">
                         <q-input class="q-pr-sm col-10" outlined dense v-model="customerName" type="text"
                             placeholder="Enter  Customer Name" />
-                        <q-btn class="q-pr-sm col-2" label="Search" type="submit" color="primary" />
+                        <q-btn class="q-pr-sm col-2" label="Add" type="submit" color="primary" />
                     </q-card-section>
                 </q-card>
             </div>

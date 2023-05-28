@@ -38,7 +38,7 @@ const columns = ref([
         name: "amount_paid",
         field: (sells) => sells.amount_paid,
         align: 'left',
-        label: "Amount Paid"
+        label: "Amount Pay"
     },
     {
         name: "date_of_paid",
@@ -57,7 +57,6 @@ const columns = ref([
 const sells = ref([]);
 const sellItem = ref('');
 const sellPrice = ref('')
-const sellCustomerName = ref('');
 const sellDate = ref('');
 const sellAmountPaid = ref('');
 const sellPaidDate = ref('');
@@ -67,7 +66,9 @@ const showBa = ref(false);
 const tempData = ref(null);
 const total = ref(null);
 const selledCustomer = ref(null)
-const customers = ref(null);
+const customers = ref([]);
+const showCustomer = ref(false);
+const customerName = ref('');
 const $q = useQuasar();
 
 
@@ -91,21 +92,30 @@ async function getCustomers() {
     const res = await api.get('/customer', {
         params: {
             rowsPerPage: 0,
-
         }
 
     })
-    console.log(res.data)
+    // console.log(res.data.data)
     customers.value = res.data.data
 }
+
 async function getSells(props) {
     pagination.value = props.pagination
+    showCustomer.value = true
     const res = await api.get('/sell', {
         headers: {}, params: props.pagination
     })
     sells.value = res.data.sell.data;
     total.value = res.data.total;
     pagination.value.rowsNumber = res.data.sell.total
+}
+
+async function addNewCustomer() {
+    const res = await api.post('/customer', {
+        name: customerName.value
+    })
+    customers.value = res.data.data
+    console.log(res)
 }
 
 async function addSell() {
@@ -122,31 +132,31 @@ async function addSell() {
         }
     );
     sellItem.value = '';
+    selledCustomer.value = ''
     sellPrice.value = '';
-    sellCustomerName.value = '';
     sellDate.value = '';
     sellAmountPaid.value = '';
     sellPaidDate.value = '';
     sells.value = res.data.sell.data;
-    pagination.value.rowsNumber = res.data.buy.total
+    pagination.value.rowsNumber = res.data.sell.total
 }
 
 function addBa(data) {
     tempData.value = data;
+    // console.log('asdf', tempData.value)
     showBa.value = true
 }
 
 async function confirmAdd() {
     tempData.value.sell_id = tempData.value.id
     try {
-
         const res = await api.post('ba', tempData.value)
         $q.notify({
             message: 'Item has been added',
             color: 'green'
         })
     } catch (error) {
-        console.log(error.response)
+        // console.log(error.response)
         $q.notify({
             message: error.response.data.message,
             color: 'red'
@@ -162,8 +172,17 @@ function editItem(data) {
 }
 
 async function updateSellItem() {
-    const res = await api.patch(`sell/${tempData.value.id}`, tempData.value)
-    sells.value = res.data.sell.data
+    try {
+        const res = await api.patch(`sell/${tempData.value.id}`, tempData.value)
+        sells.value = res.data.sell.data
+        $q.notify({
+            message: 'Updated Successfully',
+            color: 'green'
+        })
+    } catch (error) {
+        console.log(error)
+    }
+
 }
 
 function deleteItem(data) {
@@ -185,7 +204,7 @@ async function deleteSellItem() {
                     <q-card-section>
                         <div class="row">
                             <!-- <q-input class="col-3 q-pa-sm" dense outlined v-model="sellCustomerName" type="text"
-                                label="Customer Name" /> -->
+                                                                                            label="Customer Name" /> -->
                             <q-select class="col-3 q-pa-sm" dense v-model="selledCustomer" :options="customers"
                                 option-value="id" option-label="name" label="Customer Name" filled />
                             <q-input class="col-3 q-pa-sm" dense outlined v-model="sellItem" type="text" label="Item" />
@@ -214,7 +233,7 @@ async function deleteSellItem() {
                             {{ props.row.customer.name }}
                         </td>
                         <td>
-                            {{ props.row.item }}
+                            {{ props.row?.item }}
                         </td>
                         <td>
                             {{ props.row.price }}
@@ -255,6 +274,22 @@ async function deleteSellItem() {
         </div>
     </q-page>
 
+    <!-- add customer name -->
+    <q-dialog v-model="showCustomer" persistent>
+        <q-card>
+            <q-card-section class="row items-center">
+                <div>
+                    <p class="text-green-8 text-center">Add New Customer</p>
+                    <q-input outlined dense v-model="customerName" type="text" label="Customer Name" />
+                </div>
+            </q-card-section>
+            <q-card-actions align="center">
+                <q-btn label="Add" color="primary" @click="addNewCustomer" v-close-popup />
+                <q-btn flat label="Already Exist" color="primary" v-close-popup />
+            </q-card-actions>
+        </q-card>
+    </q-dialog>
+    <!-- Ba add na -->
     <q-dialog v-model="showBa" persistent>
         <q-card>
             <q-card-section class="row items-center">
